@@ -1,1 +1,1 @@
-# Image to Text Scanner App 
+# Signature Generator
