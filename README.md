@@ -1,1 +1,1 @@
-# text_scanner_app
+# Image to Text Scanner App 
