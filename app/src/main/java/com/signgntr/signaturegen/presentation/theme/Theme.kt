@@ -1,6 +1,5 @@
-package com.signgntr.signaturegen.ui.theme
+package com.signgntr.signaturegen.presentation.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

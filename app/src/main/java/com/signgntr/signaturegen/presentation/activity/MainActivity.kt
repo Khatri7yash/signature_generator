@@ -1,4 +1,4 @@
-package com.signgntr.signaturegen
+package com.signgntr.signaturegen.presentation.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.signgntr.signaturegen.ui.theme.SignatureGeneratorTheme
+import com.signgntr.signaturegen.presentation.theme.SignatureGeneratorTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,28 +20,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             SignatureGeneratorTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    Text(
+                        text = "Android",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SignatureGeneratorTheme {
-        Greeting("Android")
     }
 }
