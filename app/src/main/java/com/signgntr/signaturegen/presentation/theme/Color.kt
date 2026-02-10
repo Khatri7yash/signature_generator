@@ -1,4 +1,4 @@
-package com.signgntr.signaturegen.ui.theme
+package com.signgntr.signaturegen.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
