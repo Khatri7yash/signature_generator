@@ -31,7 +31,7 @@ fun HomeScreen() {
 }
 
 @Composable
-fun ButtonScreen() {
+private fun ButtonScreen() {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
