@@ -48,6 +48,9 @@ private fun ButtonScreen() {
             Button(onClick = {}) {
                 Text(text = "Saved Signature")
             }
+            Button(onClick = {}) {
+                Text(text = "Saved Signature")
+            }
         }
     }
 }
