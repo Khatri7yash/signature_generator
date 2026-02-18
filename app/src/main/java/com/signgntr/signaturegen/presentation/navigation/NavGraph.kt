@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.signgntr.signaturegen.presentation.screens.home.HomeScreen
+import com.signgntr.signaturegen.presentation.screens.signature_generator.SignatureGenerator
 
 val LocalCurrentRoute = (compositionLocalOf<String?> { null })
 
@@ -25,7 +26,10 @@ fun Navigation() {
             startDestination = Screen.HomeScreen.route
         ) {
             composable(Screen.HomeScreen.route) {
-                HomeScreen()
+                HomeScreen(navController)
+            }
+            composable(Screen.Signature.route) {
+                SignatureGenerator()
             }
         }
     }
