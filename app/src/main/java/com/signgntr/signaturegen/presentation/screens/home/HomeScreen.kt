@@ -24,7 +24,7 @@ import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 @Composable
 fun HomeScreen(navController: NavController) {
     val state by remember { mutableStateOf(Result.Success<Any>("")) }
-    BaseScreen(title = "") {
+    BaseScreen(navController = navController, title = "") {
         BaseColumn(uiState = state) {
             Box {
                 ButtonScreen(navController)

@@ -16,15 +16,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavController
 import com.signgntr.signaturegen.domain.common.Result
 import com.signgntr.signaturegen.presentation.common.BaseColumn
 import com.signgntr.signaturegen.presentation.common.BaseScreen
 import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 
 @Composable
-fun SignatureGenerator() {
+fun SignatureGenerator(navController: NavController) {
     val state by remember { mutableStateOf(Result.Success<Any>("")) }
-    BaseScreen(title = "Generate Signature") {
+    BaseScreen(navController = navController,title = "Generate Signature") {
         BaseColumn(uiState = state) {
             Box {
                 CanvasDrawPath()
@@ -82,5 +84,5 @@ fun CanvasDrawPath() {
 @ThemePreview
 @Composable
 fun Preview() {
-    SignatureGenerator()
+    SignatureGenerator(navController = NavController(LocalContext.current))
 }

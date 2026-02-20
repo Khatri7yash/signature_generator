@@ -29,7 +29,7 @@ fun Navigation() {
                 HomeScreen(navController)
             }
             composable(Screen.Signature.route) {
-                SignatureGenerator()
+                SignatureGenerator(navController)
             }
         }
     }

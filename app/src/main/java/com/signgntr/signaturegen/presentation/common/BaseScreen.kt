@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -17,7 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.navigation.NavController
 import com.signgntr.signaturegen.presentation.navigation.LocalCurrentRoute
 import com.signgntr.signaturegen.presentation.navigation.Screen
 import com.signgntr.signaturegen.presentation.theme.SignatureGeneratorTheme
@@ -26,6 +30,7 @@ import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaseScreen(
+    navController: NavController,
     title: String,
     isEmpty: Boolean = false,
     content: @Composable (() -> Unit)
@@ -52,7 +57,7 @@ fun BaseScreen(
                             route == Screen.HomeScreen.route -> {}
 
                             else -> {
-                                IconButton(onClick = {}) {
+                                IconButton(onClick = { navController.popBackStack() }) {
                                     Icon(
                                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                         contentDescription = "Localized description"
@@ -62,7 +67,15 @@ fun BaseScreen(
                         }
 
                     },
-                    actions = {})
+                    actions = {
+                        if(route == Screen.Signature.route)
+                        IconButton(onClick = {}) {
+                            Icon(
+                                imageVector = Icons.Rounded.Check,
+                                contentDescription = "Localized description"
+                            )
+                        }
+                    })
 
             },
             bottomBar = {
@@ -83,7 +96,7 @@ fun BaseScreen(
 @ThemePreview
 @Composable
 fun Preview() {
-    BaseScreen(
+    BaseScreen(navController = NavController(LocalContext.current),
         "Title"
     ) {
 
