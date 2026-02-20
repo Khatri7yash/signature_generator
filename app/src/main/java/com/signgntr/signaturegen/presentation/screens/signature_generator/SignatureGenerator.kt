@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import com.signgntr.signaturegen.domain.common.Result
@@ -28,7 +27,6 @@ fun SignatureGenerator() {
     BaseScreen(title = "Generate Signature") {
         BaseColumn(uiState = state) {
             Box {
-//                CanvasView(Modifier.fillMaxSize())
                 CanvasDrawPath()
             }
         }
@@ -44,45 +42,37 @@ fun CanvasView(modifier: Modifier = Modifier) {
 
 @Composable
 fun CanvasDrawPath() {
-    val signatures = remember { mutableStateListOf<List<Offset>>() }
-    val points = remember { mutableStateListOf<Offset>() }
-
+    val paths = remember { mutableStateListOf<Path>() }
+    val pathOffsets = remember { mutableStateListOf<Offset>() }
     Canvas(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.LightGray)
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragStart = {
-                        points.clear()
+                    onDragStart = { offSet ->
+                        paths.add(Path().apply { moveTo(offSet.x, offSet.y) })
+                        pathOffsets.add(offSet)
                     },
                     onDragEnd = {
-                        signatures.add(points)
-//                        points.clear()
+                        pathOffsets.clear()
                     }) { change, _ ->
-                    // 3. Adding to state list triggers recomposition
-                    points.add(change.position)
+                    paths.lastOrNull()?.lineTo(change.position.x, change.position.y)
+                    pathOffsets.add(change.position)
                 }
             }
     ) {
 
-
-        // 4. Build the path dynamically from state
-//        val singlePath = Path().apply {
-//            points.forEachIndexed { i, point ->
-//                if (i == 0) moveTo(point.x, point.y) else lineTo(point.x, point.y)
-//            }
-//        }
-//        drawPath(singlePath, Color.Black, style = Stroke(width = 5f))
-
-
-        // 4. Build the path dynamically from state
-        signatures.forEach { singleSignature ->
-            val path = Path().apply {
-                singleSignature.forEachIndexed { i, point ->
-                    if (i == 0) moveTo(point.x, point.y) else lineTo(point.x, point.y)
-                }
+        val drawPath = Path().apply {
+            pathOffsets.forEachIndexed { index, offset ->
+                if (index == 0)
+                    moveTo(offset.x, offset.y)
+                else
+                    lineTo(offset.x, offset.y)
             }
+        }
+        drawPath(drawPath, Color.Black, style = Stroke(width = 5f))
+        paths.forEach { path ->
             drawPath(path, Color.Black, style = Stroke(width = 5f))
         }
     }
