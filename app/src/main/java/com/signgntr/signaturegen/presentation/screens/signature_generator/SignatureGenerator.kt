@@ -94,7 +94,7 @@ private fun DrawingToolsView() {
     val flingBehavior = rememberSnapFlingBehavior(
         lazyListState = listState
     )
-    val state = rememberScrollAreaState(lazyListState)
+//    val state = rememberScrollAreaState(lazyListState)
 
     Box(
         modifier = Modifier
