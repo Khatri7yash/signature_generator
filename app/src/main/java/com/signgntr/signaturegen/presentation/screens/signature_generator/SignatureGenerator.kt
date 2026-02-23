@@ -27,8 +27,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Menu
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -42,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -79,16 +82,8 @@ private fun DrawingToolsView() {
         DrawingTools(title = "Brush", icon = Icons.Rounded.Edit),
         DrawingTools(title = "Colors", icon = Icons.Rounded.Menu),
         DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
+        DrawingTools(title = "Undo", icon = Icons.Rounded.Refresh, isSelectable = false),
+        DrawingTools(title = "Redo", icon = Icons.Rounded.Refresh, isSelectable = false)
     )
     val listState = rememberLazyListState()
     val flingBehavior = rememberSnapFlingBehavior(
@@ -176,16 +171,21 @@ private fun ToolView(tool: DrawingTools) {
     Column(
         modifier = Modifier
             .wrapContentHeight()
-            .padding(10.dp, 5.dp)
+            .padding(10.dp, 5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         IconButton(onClick = {
             selectedState = !selectedState
         }) {
-            Icon(imageVector = tool.icon, contentDescription = tool.title)
+            Icon(
+                modifier = Modifier.rotate(if (tool.title.lowercase() == "redo") 180f else 0f),
+                imageVector = tool.icon,
+                contentDescription = tool.title
+            )
         }
         Text(
             text = tool.title,
-            fontWeight = if (selectedState) FontWeight.Bold else FontWeight.Normal,
+            fontWeight = if (tool.isSelectable && selectedState) FontWeight.Bold else FontWeight.Normal,
             fontSize = 12.sp
         )
     }
