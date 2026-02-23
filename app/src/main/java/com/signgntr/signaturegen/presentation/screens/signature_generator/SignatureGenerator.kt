@@ -79,6 +79,7 @@ fun SignatureGenerator(navController: NavController) {
 @Composable
 private fun DrawingToolsView() {
     val tools = listOf(
+        DrawingTools(title = "Size", icon = Icons.Rounded.Edit),
         DrawingTools(title = "Brush", icon = Icons.Rounded.Edit),
         DrawingTools(title = "Colors", icon = Icons.Rounded.Menu),
         DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
