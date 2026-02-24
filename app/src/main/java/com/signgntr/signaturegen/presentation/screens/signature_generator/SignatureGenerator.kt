@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,33 +16,38 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.RichTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -52,7 +56,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -60,6 +64,8 @@ import com.signgntr.signaturegen.domain.common.Result
 import com.signgntr.signaturegen.presentation.common.BaseColumn
 import com.signgntr.signaturegen.presentation.common.BaseScreen
 import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
+import com.signgntr.signaturegen.presentation.utils.extentions.showSelected
+import kotlinx.coroutines.launch
 
 @Composable
 fun SignatureGenerator(navController: NavController) {
@@ -166,30 +172,91 @@ fun HorizontalScrollbar(state: LazyListState) {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ToolView(tool: DrawingTools) {
     var selectedState by rememberSaveable { mutableStateOf(tool.isSelected) }
-    Column(
-        modifier = Modifier
-            .wrapContentHeight()
-            .padding(10.dp, 5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    val tooltipState = rememberTooltipState(isPersistent = true)
+    val coroutineScope = rememberCoroutineScope()
+    var selectedSize by rememberSaveable { mutableIntStateOf(0) }
+
+    LaunchedEffect(tooltipState.isVisible) {
+        if (!tooltipState.isVisible) {
+            selectedState = false
+        }
+    }
+
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberRichTooltipPositionProvider(),
+        tooltip = {
+            RichTooltip(
+                title = {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = tool.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Center
+                    )
+                },
+            ) {
+                GetDrawingToolContentView(
+                    type = tool.title,
+                    selectedSize = selectedSize
+                ) { size ->
+                    selectedSize = size
+                }
+            }
+        },
+        state = tooltipState
     ) {
-        IconButton(onClick = {
-            selectedState = !selectedState
-        }) {
-            Icon(
-                modifier = Modifier.rotate(if (tool.title.lowercase() == "redo") 180f else 0f),
-                imageVector = tool.icon,
-                contentDescription = tool.title
+        Column(
+            modifier = Modifier
+                .wrapContentHeight()
+                .padding(10.dp, 5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            IconButton(
+                modifier = Modifier
+                    .clip(shape = CircleShape)
+                    .showSelected(selectedState),
+                onClick = {
+                    coroutineScope.launch {
+                        selectedState = !selectedState
+                        tooltipState.show()
+                    }
+                }) {
+                Icon(
+                    modifier = Modifier.rotate(if (tool.title.lowercase() == "redo") 180f else 0f),
+                    imageVector = tool.icon,
+                    contentDescription = tool.title
+                )
+            }
+            Text(
+                text = tool.title,
+                fontWeight = if (tool.isSelectable && selectedState) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 12.sp
             )
         }
-        Text(
-            text = tool.title,
-            fontWeight = if (tool.isSelectable && selectedState) FontWeight.Bold else FontWeight.Normal,
-            fontSize = 12.sp
-        )
     }
+}
+
+@Composable
+fun GetDrawingToolContentView(type: String, selectedSize: Int, sizeCallback: (Int) -> Unit) {
+    when (type.lowercase()) {
+        "size" -> {
+            SizeView(selectedSize, sizeCallback)
+        }
+
+        "brush" -> {
+            BrushView()
+        }
+    }
+}
+
+@Composable
+fun BrushView() {
+
 }
 
 @Composable
@@ -240,6 +307,6 @@ fun CanvasDrawPath() {
 
 @ThemePreview
 @Composable
-fun Preview() {
+private fun Preview() {
     SignatureGenerator(navController = NavController(LocalContext.current))
 }
