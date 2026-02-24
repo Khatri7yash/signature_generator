@@ -36,8 +36,10 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +55,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -67,16 +71,31 @@ import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 import com.signgntr.signaturegen.presentation.utils.extentions.showSelected
 import kotlinx.coroutines.launch
 
+
+// 1. The State Holder
+class DrawingController {
+    var strokeWidth by mutableFloatStateOf(5f) // Observable state
+}
+
+// 2. The "Wormhole" (CompositionLocal)
+val LocalDrawingController = staticCompositionLocalOf<DrawingController> {
+    error("No Controller Provided")
+}
+
 @Composable
 fun SignatureGenerator(navController: NavController) {
     val state by remember { mutableStateOf(Result.Success<Any>("")) }
-    BaseScreen(navController = navController, title = "Generate Signature") {
-        BaseColumn(uiState = state) {
-            Column(verticalArrangement = Arrangement.SpaceEvenly) {
-                Box(modifier = Modifier.weight(1f)) {
-                    CanvasDrawPath()
+    val controller = remember { DrawingController() }
+
+    CompositionLocalProvider(LocalDrawingController provides controller) {
+        BaseScreen(navController = navController, title = "Generate Signature") {
+            BaseColumn(uiState = state) {
+                Column(verticalArrangement = Arrangement.SpaceEvenly) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        CanvasDrawPath()
+                    }
+                    DrawingToolsView()
                 }
-                DrawingToolsView()
             }
         }
     }
@@ -178,7 +197,6 @@ private fun ToolView(tool: DrawingTools) {
     var selectedState by rememberSaveable { mutableStateOf(tool.isSelected) }
     val tooltipState = rememberTooltipState(isPersistent = true)
     val coroutineScope = rememberCoroutineScope()
-    var selectedSize by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(tooltipState.isVisible) {
         if (!tooltipState.isVisible) {
@@ -202,10 +220,7 @@ private fun ToolView(tool: DrawingTools) {
             ) {
                 GetDrawingToolContentView(
                     type = tool.title,
-                    selectedSize = selectedSize
-                ) { size ->
-                    selectedSize = size
-                }
+                )
             }
         },
         state = tooltipState
@@ -242,22 +257,20 @@ private fun ToolView(tool: DrawingTools) {
 }
 
 @Composable
-fun GetDrawingToolContentView(type: String, selectedSize: Int, sizeCallback: (Int) -> Unit) {
+fun GetDrawingToolContentView(type: String) {
     when (type.lowercase()) {
         "size" -> {
-            SizeView(selectedSize, sizeCallback)
+            SizeView()
         }
 
         "brush" -> {
-            BrushView()
+            BrushTypesView(0) {
+
+            }
         }
     }
 }
 
-@Composable
-fun BrushView() {
-
-}
 
 @Composable
 fun CanvasView(modifier: Modifier = Modifier) {
@@ -270,6 +283,8 @@ fun CanvasView(modifier: Modifier = Modifier) {
 fun CanvasDrawPath() {
     val paths = remember { mutableStateListOf<Path>() }
     val pathOffsets = remember { mutableStateListOf<Offset>() }
+    val controller = LocalDrawingController.current
+
     Canvas(
         modifier = Modifier
             .fillMaxSize()
@@ -297,9 +312,9 @@ fun CanvasDrawPath() {
                     lineTo(offset.x, offset.y)
             }
         }
-        drawPath(drawPath, Color.Black, style = Stroke(width = 5f))
+        drawPath(drawPath, Color.Black, style = Stroke(width = controller.strokeWidth))
         paths.forEach { path ->
-            drawPath(path, Color.Black, style = Stroke(width = 5f))
+            drawPath(path, Color.Black, style = Stroke(width = controller.strokeWidth))
         }
     }
 }

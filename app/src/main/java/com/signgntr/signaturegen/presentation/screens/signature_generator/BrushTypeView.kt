@@ -13,15 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 import com.signgntr.signaturegen.presentation.utils.extentions.showSelected
 
-@Composable
-fun SizeView() {
-    // Grab the controller from the "wormhole"
-    val controller = LocalDrawingController.current
 
+@Composable
+fun BrushTypesView(selected: Int, selectedCallback: (Int) -> Unit) {
     Column {
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
@@ -29,8 +28,8 @@ fun SizeView() {
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             items(8, key = { it }) {
-                SizeItem(it == (controller.strokeWidth / 5f).toInt(), it) { size ->
-                    controller.strokeWidth = (size * 5f)
+                BrushItem(it == selected, it) { item ->
+                    selectedCallback(item)
                 }
             }
         }
@@ -38,23 +37,24 @@ fun SizeView() {
 }
 
 @Composable
-private fun SizeItem(
+private fun BrushItem(
     isSelected: Boolean,
-    size: Int,
-    selectedSize: (Int) -> Unit
+    item: Int,
+    selectedCallback: (Int) -> Unit
 ) {
     Canvas(
         modifier = Modifier
             .size(50.dp)
             .clip(shape = CircleShape)
             .showSelected(isSelected)
-            .clickable(onClick = { selectedSize(size) })
+            .clickable(onClick = { selectedCallback(item) })
     ) {
         drawLine(
             color = Color.Black,
             start = Offset(50f, 50f),
             end = Offset(150f, 100f),
-            strokeWidth = size * 5f
+            strokeWidth = 10f,
+            cap = StrokeCap.Square
         )
     }
 }
@@ -62,5 +62,5 @@ private fun SizeItem(
 @ThemePreview
 @Composable
 private fun Preview() {
-    SizeView()
+    BrushTypesView(0) {}
 }
