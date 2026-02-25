@@ -1,12 +1,9 @@
 package com.signgntr.signaturegen.presentation.screens.signature_generator
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,14 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,8 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +44,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -71,11 +59,6 @@ import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 import com.signgntr.signaturegen.presentation.utils.extentions.showSelected
 import kotlinx.coroutines.launch
 
-
-// 1. The State Holder
-class DrawingController {
-    var strokeWidth by mutableFloatStateOf(5f) // Observable state
-}
 
 // 2. The "Wormhole" (CompositionLocal)
 val LocalDrawingController = staticCompositionLocalOf<DrawingController> {
@@ -103,18 +86,10 @@ fun SignatureGenerator(navController: NavController) {
 
 @Composable
 private fun DrawingToolsView() {
-    val tools = listOf(
-        DrawingTools(title = "Size", icon = Icons.Rounded.Edit),
-        DrawingTools(title = "Brush", icon = Icons.Rounded.Edit),
-        DrawingTools(title = "Colors", icon = Icons.Rounded.Menu),
-        DrawingTools(title = "Eraser", icon = Icons.Default.Edit),
-        DrawingTools(title = "Undo", icon = Icons.Rounded.Refresh, isSelectable = false),
-        DrawingTools(title = "Redo", icon = Icons.Rounded.Refresh, isSelectable = false)
-    )
-    val listState = rememberLazyListState()
-    val flingBehavior = rememberSnapFlingBehavior(
-        lazyListState = listState
-    )
+//    val listState = rememberLazyListState()
+//    val flingBehavior = rememberSnapFlingBehavior(
+//        lazyListState = listState
+//    )
 //    val state = rememberScrollAreaState(lazyListState)
 
     Box(
@@ -127,18 +102,20 @@ private fun DrawingToolsView() {
                 .wrapContentHeight()
                 .fillMaxWidth(),
 //            flingBehavior = flingBehavior,
-            state = listState
+//            state = listState
         ) {
-            items(tools.size, key = { it }) {
-                ToolView(tools[it])
+            ToolTypes.entries.forEachIndexed { index, types ->
+                item(key = index) {
+                    ToolView(types.drawingTool)
+                }
             }
         }
 
-        AnimatedVisibility(
-            visible = listState.isScrollInProgress
-        ) {
-            HorizontalScrollbar(listState)
-        }
+//        AnimatedVisibility(
+//            visible = listState.isScrollInProgress
+//        ) {
+//            HorizontalScrollbar(listState)
+//        }
 //        HorizontalScrollbar(listState)
     }
 }
@@ -259,14 +236,18 @@ private fun ToolView(tool: DrawingTools) {
 @Composable
 fun GetDrawingToolContentView(type: String) {
     when (type.lowercase()) {
-        "size" -> {
+        ToolTypes.SIZE.drawingTool.title.lowercase() -> {
             SizeView()
         }
 
-        "brush" -> {
-            BrushTypesView(0) {
+//        ToolTypes.BRUSH.drawingTool.title.lowercase() -> {
+//            BrushTypesView(0) {
+//
+//            }
+//        }
 
-            }
+        ToolTypes.COLORS.drawingTool.title.lowercase() -> {
+            ColorPickerView()
         }
     }
 }
@@ -312,9 +293,9 @@ fun CanvasDrawPath() {
                     lineTo(offset.x, offset.y)
             }
         }
-        drawPath(drawPath, Color.Black, style = Stroke(width = controller.strokeWidth))
+        drawPath(drawPath, controller.inkColor, style = Stroke(width = controller.strokeWidth))
         paths.forEach { path ->
-            drawPath(path, Color.Black, style = Stroke(width = controller.strokeWidth))
+            drawPath(path, controller.inkColor, style = Stroke(width = controller.strokeWidth))
         }
     }
 }
