@@ -42,9 +42,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -214,7 +219,7 @@ private fun ToolView(tool: DrawingTools) {
                     .clip(shape = CircleShape)
                     .showSelected(selectedState),
                 onClick = {
-                    if (tool.isSelectable) {
+                    if (tool.isSelectable && tool.title != ToolTypes.ERASER.drawingTool.title) {
                         coroutineScope.launch {
                             selectedState = !selectedState
                             tooltipState.show()
@@ -230,6 +235,9 @@ private fun ToolView(tool: DrawingTools) {
                     } else if (tool.title == ToolTypes.RESET.drawingTool.title) {
                         controller.paths.clear()
                         controller.redoPaths.clear()
+                    } else if (tool.title == ToolTypes.ERASER.drawingTool.title) {
+                        controller.isEraser.value = !controller.isEraser.value
+                        selectedState = !selectedState
                     }
                 }) {
                 Icon(
@@ -296,21 +304,36 @@ fun CanvasDrawPath() {
                     pathOffsets.add(change.position)
                 }
             }
+//            .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
     ) {
+//        with(drawContext.canvas.nativeCanvas) {
+//            val checkPoint = saveLayer(null, null) // Creates the offscreen buffer
 
-        val drawPath = Path().apply {
-            pathOffsets.forEachIndexed { index, offset ->
-                if (index == 0)
-                    moveTo(offset.x, offset.y)
-                else
-                    lineTo(offset.x, offset.y)
+            val drawPath = Path().apply {
+                pathOffsets.forEachIndexed { index, offset ->
+                    if (index == 0)
+                        moveTo(offset.x, offset.y)
+                    else
+                        lineTo(offset.x, offset.y)
+                }
             }
+            drawPath(
+                drawPath,
+                controller.inkColor,
+                style = Stroke(width = controller.strokeWidth, cap = StrokeCap.Round),
+//                blendMode = if (controller.isEraser.value) BlendMode.Clear else BlendMode.Src
+            )
+            controller.paths.forEach { path ->
+                drawPath(
+                    path,
+                    controller.inkColor,
+                    style = Stroke(width = controller.strokeWidth, cap = StrokeCap.Round),
+//                blendMode = if (controller.isEraser.value) BlendMode.Clear else BlendMode.Src
+                )
+            }
+//            restoreToCount(checkPoint) // Merges the layer back to the screen
         }
-        drawPath(drawPath, controller.inkColor, style = Stroke(width = controller.strokeWidth))
-        controller.paths.forEach { path ->
-            drawPath(path, controller.inkColor, style = Stroke(width = controller.strokeWidth))
-        }
-    }
+//    }
 }
 
 

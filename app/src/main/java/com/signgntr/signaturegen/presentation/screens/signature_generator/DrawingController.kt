@@ -14,4 +14,5 @@ class DrawingController {
     var inkColor by mutableStateOf(Color.Black) // Observable state
     val paths = mutableStateListOf<Path>()
     val redoPaths = mutableStateListOf<Path>()
+    var isEraser =  mutableStateOf(false)
 }

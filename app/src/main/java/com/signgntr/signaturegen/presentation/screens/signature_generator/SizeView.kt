@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.signgntr.signaturegen.presentation.utils.annotation.ThemePreview
 import com.signgntr.signaturegen.presentation.utils.extentions.showSelected
@@ -54,7 +55,8 @@ private fun SizeItem(
             color = Color.Black,
             start = Offset(50f, 50f),
             end = Offset(150f, 100f),
-            strokeWidth = size * 5f
+            strokeWidth = size * 5f,
+            cap = StrokeCap.Round
         )
     }
 }
