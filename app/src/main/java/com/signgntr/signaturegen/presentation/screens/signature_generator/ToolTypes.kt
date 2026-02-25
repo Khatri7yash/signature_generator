@@ -2,6 +2,7 @@ package com.signgntr.signaturegen.presentation.screens.signature_generator
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.Refresh
@@ -14,6 +15,7 @@ enum class ToolTypes(val drawingTool:DrawingTools ) {
     ERASER(drawingTool = DrawingTools(title = "Eraser",icon = Icons.Default.Edit)),
     UNDO(drawingTool = DrawingTools(title = "Undo",icon = Icons.Rounded.Refresh, isSelectable = false)),
     REDO(drawingTool = DrawingTools(title = "Redo",icon = Icons.Rounded.Refresh, isSelectable = false)),
+    RESET(drawingTool = DrawingTools(title = "Reset",icon = Icons.Rounded.Clear, isSelectable = false)),
 
 }
 

@@ -174,6 +174,7 @@ private fun ToolView(tool: DrawingTools) {
     var selectedState by rememberSaveable { mutableStateOf(tool.isSelected) }
     val tooltipState = rememberTooltipState(isPersistent = true)
     val coroutineScope = rememberCoroutineScope()
+    val controller = LocalDrawingController.current
 
     LaunchedEffect(tooltipState.isVisible) {
         if (!tooltipState.isVisible) {
@@ -213,9 +214,22 @@ private fun ToolView(tool: DrawingTools) {
                     .clip(shape = CircleShape)
                     .showSelected(selectedState),
                 onClick = {
-                    coroutineScope.launch {
-                        selectedState = !selectedState
-                        tooltipState.show()
+                    if (tool.isSelectable) {
+                        coroutineScope.launch {
+                            selectedState = !selectedState
+                            tooltipState.show()
+                        }
+                    } else if (tool.title == ToolTypes.UNDO.drawingTool.title) {
+                        controller.paths.removeLastOrNull()?.let {
+                            controller.redoPaths.add(it)
+                        }
+                    } else if (tool.title == ToolTypes.REDO.drawingTool.title) {
+                        controller.redoPaths.removeLastOrNull()?.let {
+                            controller.paths.add(it)
+                        }
+                    } else if (tool.title == ToolTypes.RESET.drawingTool.title) {
+                        controller.paths.clear()
+                        controller.redoPaths.clear()
                     }
                 }) {
                 Icon(
@@ -262,7 +276,6 @@ fun CanvasView(modifier: Modifier = Modifier) {
 
 @Composable
 fun CanvasDrawPath() {
-    val paths = remember { mutableStateListOf<Path>() }
     val pathOffsets = remember { mutableStateListOf<Offset>() }
     val controller = LocalDrawingController.current
 
@@ -273,13 +286,13 @@ fun CanvasDrawPath() {
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offSet ->
-                        paths.add(Path().apply { moveTo(offSet.x, offSet.y) })
+                        controller.paths.add(Path().apply { moveTo(offSet.x, offSet.y) })
                         pathOffsets.add(offSet)
                     },
                     onDragEnd = {
                         pathOffsets.clear()
                     }) { change, _ ->
-                    paths.lastOrNull()?.lineTo(change.position.x, change.position.y)
+                    controller.paths.lastOrNull()?.lineTo(change.position.x, change.position.y)
                     pathOffsets.add(change.position)
                 }
             }
@@ -294,7 +307,7 @@ fun CanvasDrawPath() {
             }
         }
         drawPath(drawPath, controller.inkColor, style = Stroke(width = controller.strokeWidth))
-        paths.forEach { path ->
+        controller.paths.forEach { path ->
             drawPath(path, controller.inkColor, style = Stroke(width = controller.strokeWidth))
         }
     }
