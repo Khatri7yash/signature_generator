@@ -294,13 +294,15 @@ fun CanvasDrawPath() {
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { offSet ->
-                        controller.paths.add(Path().apply { moveTo(offSet.x, offSet.y) })
+                        controller.paths.add(PathData(path = Path().apply { moveTo(offSet.x, offSet.y) },
+                            color = controller.inkColor,
+                            strokeWidth = controller.strokeWidth))
                         pathOffsets.add(offSet)
                     },
                     onDragEnd = {
                         pathOffsets.clear()
                     }) { change, _ ->
-                    controller.paths.lastOrNull()?.lineTo(change.position.x, change.position.y)
+                    controller.paths.lastOrNull()?.path?.lineTo(change.position.x, change.position.y)
                     pathOffsets.add(change.position)
                 }
             }
@@ -325,9 +327,9 @@ fun CanvasDrawPath() {
             )
             controller.paths.forEach { path ->
                 drawPath(
-                    path,
-                    controller.inkColor,
-                    style = Stroke(width = controller.strokeWidth, cap = StrokeCap.Round),
+                    path.path,
+                    path.color,
+                    style = Stroke(width = path.strokeWidth, cap = StrokeCap.Round),
 //                blendMode = if (controller.isEraser.value) BlendMode.Clear else BlendMode.Src
                 )
             }
