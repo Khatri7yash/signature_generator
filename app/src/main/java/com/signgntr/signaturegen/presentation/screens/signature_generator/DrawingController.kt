@@ -12,7 +12,9 @@ import androidx.compose.ui.graphics.Path
 class DrawingController {
     var strokeWidth by mutableFloatStateOf(5f) // Observable state
     var inkColor by mutableStateOf(Color.Black) // Observable state
-    val paths = mutableStateListOf<Path>()
-    val redoPaths = mutableStateListOf<Path>()
+    val paths = mutableStateListOf<PathData>()
+    val redoPaths = mutableStateListOf<PathData>()
     var isEraser =  mutableStateOf(false)
 }
+
+data class PathData(val path: Path, val color: Color, val strokeWidth: Float)
